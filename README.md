@@ -76,6 +76,39 @@ cloudflared tunnel login
 | `runnerCLI-tailscale` | Update ACL qua Tailscale API | OAuth env, `--tailnet`, `--body-file`, `--dry-run` | API response summary va ma status |
 | `runnerCLI-patch-env` | Patch gia tri `*_BASE64` trong `.env` | duong dan `.env`, comment `# Path: ...`, `--dry-run` | Ghi de file `.env` hoac chi in summary neu dry-run |
 
+## Diagram luong CLI
+
+```mermaid
+flowchart TD
+    A["runnerCLI<br/>Input:<br/>- selector so / alias<br/>- args cua command con<br/>Output:<br/>- hien menu neu khong co arg<br/>- forward sang command duoc chon"]
+
+    B["runnerCLI-createtunnel<br/>Input:<br/>- CLOUDFLARED_TUNNEL_NAME(_XX)<br/>- CLOUDFLARED_TUNNEL_DOMAIN_XX<br/>- SSH_PORT, CLOUDFLARED_DEFAULT_SERVICE<br/>- --yes<br/>Output:<br/>- cloudflared-config.yml<br/>- cloudflared-credentials.json<br/>- log cloudflared + summary"]
+
+    C["runnerCLI-tailscale<br/>Input:<br/>- TAILSCALE_CLIENT_ID / TS_CLIENT_ID<br/>- TAILSCALE_CLIENT_SECRET / TS_CLIENT_SECRET<br/>- --tailnet, --body-file, --dry-run<br/>Output:<br/>- API status<br/>- response summary<br/>- khong tao file moi"]
+
+    D["runnerCLI-patch-env<br/>Input:<br/>- duong dan .env<br/>- # Path: ./some-file<br/>- key *_BASE64<br/>- --dry-run<br/>Output:<br/>- cap nhat file .env tai cho<br/>- hoac chi in summary neu dry-run"]
+
+    E["Cloudflare / cloudflared<br/>External side effects:<br/>- tao tunnel<br/>- tao DNS route"]
+    F["Tailscale API<br/>External side effects:<br/>- cap nhat ACL"]
+    G["Local files<br/>- cloudflared-config.yml<br/>- cloudflared-credentials.json<br/>- .env"]
+
+    A -->|"1 / createtunnel / tunnel"| B
+    A -->|"2 / tailscale / acl"| C
+    A -->|"3 / patch-env"| D
+
+    B --> E
+    B --> G
+    C --> F
+    D --> G
+```
+
+Ghi chu:
+
+- `runnerCLI` chi la command dieu huong; logic chinh nam o 3 command con.
+- `runnerCLI-createtunnel` sinh file local, vi vay can tranh commit nham output sau khi chay.
+- `runnerCLI-tailscale` tac dong truc tiep len Tailscale API, nen uu tien `--dry-run` khi kiem tra cau hinh.
+- `runnerCLI-patch-env` sua file `.env` tai cho; neu muon review truoc thi chay `--dry-run`.
+
 ## 1. runnerCLI
 
 ### Tac dung
