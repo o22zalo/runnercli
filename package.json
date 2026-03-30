@@ -32,6 +32,7 @@
   },
   "license": "MIT",
   "files": [
+    ".env.example",
     "README.md",
     "package.json",
     "runnerCLI.js",
